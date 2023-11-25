@@ -1,0 +1,119 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final Stopwatch _stopwatch = Stopwatch();
+  final Duration _interval = Duration(milliseconds: 16);
+  List<String> lapTimes = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Stopwatch App'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              '',
+              style: TextStyle(fontSize: 20),
+            ),
+            StreamBuilder(
+              stream: Stream.periodic(_interval),
+              builder: (context, snapshot) {
+                return Text(
+                  formatTime(_stopwatch.elapsedMilliseconds),
+                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                );
+              },
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    if (_stopwatch.isRunning) {
+                      _stopwatch.stop();
+                    } else {
+                      _stopwatch.start();
+                    }
+                    setState(() {});
+                  },
+                  child: Icon(_stopwatch.isRunning ? Icons.pause : Icons.play_arrow),
+                ),
+                SizedBox(width: 20),
+                FloatingActionButton(
+                  onPressed: () {
+                    resetStopwatch();
+                  },
+                  child: Icon(Icons.refresh),
+                ),
+                SizedBox(width: 20),
+                FloatingActionButton(
+                  onPressed: () {
+                    saveTime();
+                  },
+                  child: Icon(Icons.check),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Saved Times:',
+              style: TextStyle(fontSize: 20),
+            ),
+            Column(
+              children: lapTimes
+                  .map((lapTime) => Text(
+                        lapTime,
+                        style: TextStyle(fontSize: 16),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void saveTime() {
+    lapTimes.add(formatTime(_stopwatch.elapsedMilliseconds));
+    setState(() {});
+  }
+
+  void resetStopwatch() {
+    if (!_stopwatch.isRunning) {
+      _stopwatch.reset();
+      lapTimes.clear();
+      setState(() {});
+    }
+  }
+
+  String formatTime(int milliseconds) {
+    int minutes = (milliseconds / 60000).floor();
+    int seconds = ((milliseconds % 60000) / 1000).floor();
+
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+}
+
